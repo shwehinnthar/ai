@@ -1,182 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mr.Upanna - Buddhist Research AI Tools</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: #00695c;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      position: relative;
-    }
-    .chatbox-container {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
-    }
-    .chatbox {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      background-color: #004d40;
-      padding: 10px;
-      border-radius: 10px;
-    }
-    .chatbox input {
-      padding: 10px;
-      border-radius: 5px;
-      border: none;
-      width: 250px;
-    }
-    .chatbox button {
-      padding: 10px 15px;
-      border-radius: 5px;
-      border: none;
-      background-color: #0288d1;
-      color: white;
-      cursor: pointer;
-    }
-    #chatResponse {
-      margin-top: 10px;
-      color: #ffffff;
-      font-style: italic;
-      text-align: center;
-    }
-    .container {
-      padding: 20px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
-    .card {
-      background-color: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-    }
-    .card h3 {
-      margin-top: 0;
-      color: #00695c;
-    }
-    .card a {
-      display: inline-block;
-      margin-top: 10px;
-      color: #0288d1;
-      text-decoration: none;
-    }
-    .card a:hover {
-      text-decoration: underline;
-    }
-    .card.full-width {
-      grid-column: 1 / -1;
-      padding: 0;
-      overflow: hidden;
-    }
-    .card.full-width iframe {
-      width: 100%;
-      height: 800px;
-      border: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator (Fixed)</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .qr-container {
+            background: lightgray;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+            width: 100%;
+            max-width: 500px;
+            margin: 20px;
+        }
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 95%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 100px;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        select {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+        button:hover {
+            background-color: #3182ce;
+        }
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            min-height: 200px;
+        }
+        #qrcode img {
+            max-width: 100%;
+            height: auto;
+            border: 10px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: #e53e3e;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        @media (max-width: 600px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Mr.Upanna - Buddhist Academic AI Research Tools</h1>
-    <p>Explore and utilize AI-powered platforms for Buddhist studies and research</p>
-    <div class="chatbox-container">
-      <div class="chatbox">
-        <input type="text" id="chatInput" placeholder="Ask a question...">
-        <button onclick="sendMessage()">Send</button>
-      </div>
+    <div class="qr-container">
+        <h1>QR Code Generator</h1>
+        
+        <textarea id="qrText" placeholder="Enter text or URL..."></textarea>
+        <div class="controls">
+            <div class="control-group">
+                <label for="qrColor">QR Color</label>
+                <input type="color" id="qrColor" value="#000000">
+            </div>
+            <div class="control-group">
+                <label for="qrBgColor">Background</label>
+                <input type="color" id="qrBgColor" value="#ffffff">
+            </div>
+            <div class="control-group">
+                <label for="qrSize">Size</label>
+                <select id="qrSize">
+                    <option value="100">Small</option>
+                    <option value="200" selected>Medium</option>
+                    <option value="300">Large</option>
+                </select>
+            </div>
+        </div>
+        
+        <button id="generateBtn">Generate QR Code</button>
+        
+        <div id="qrcode"></div>
+        
+        <div id="errorMsg" class="error" style="display: none;"></div>
+        
+        <button id="downloadBtn" style="display: none;">Download QR Code</button>
     </div>
-    <div id="chatResponse"></div>
-  </header>
-  <div class="container">
-    <div class="card">
-      <h3>Elicit.org</h3>
-      <p>AI research assistant that extracts academic answers and citation-backed evidence from papers.</p>
-      <a href="https://elicit.org" target="_blank">Visit Elicit</a>
-    </div>
-    <div class="card">
-      <h3>SuttaCentral</h3>
-      <p>Access canonical texts from Theravāda, Mahāyāna, and Vajrayāna traditions with translations.</p>
-      <a href="https://suttacentral.net" target="_blank">Visit SuttaCentral</a>
-    </div>
-    <div class="card">
-      <h3>Perplexity AI</h3>
-      <p>Search engine powered by AI with scholarly citation support and academic mode.</p>
-      <a href="https://www.perplexity.ai" target="_blank">Visit Perplexity</a>
-    </div>
-    <div class="card">
-      <h3>Zotero</h3>
-      <p>Reference manager for organizing research citations in APA, MLA, or Chicago format.</p>
-      <a href="https://www.zotero.org" target="_blank">Visit Zotero</a>
-    </div>
-    <div class="card">
-      <h3>Claude.ai</h3>
-      <p>AI chat assistant designed for deep, philosophical, and academic conversation.</p>
-      <a href="https://claude.ai" target="_blank">Visit Claude</a>
-    </div>
-    <div class="card">
-      <h3>Google Scholar</h3>
-      <p>Academic search engine to locate scholarly articles and citations on Buddhist studies.</p>
-      <a href="https://scholar.google.com" target="_blank">Visit Google Scholar</a>
-    </div>
-    <div class="card">
-      <h3>OpenRefine</h3>
-      <p>Data cleaning tool for refining and organizing messy research datasets.</p>
-      <a href="https://openrefine.org" target="_blank">Visit OpenRefine</a>
-    </div>
-    <div class="card full-width">
-      <iframe src="https://digitalpalireader.online/_dprhtml/index.html"></iframe>
-    </div>
-  </div>
-  <script>
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyAVZ6w99iS7OtryUlaJXovJhQWU-yZ2iKU",
-  authDomain: "login-ca153.firebaseapp.com",
-  databaseURL: "https://login-ca153.firebaseio.com",
-  projectId: "login-ca153",
-  storageBucket: "login-ca153.appspot.com",
-  messagingSenderId: "649333708701",
-  appId: "1:649333708701:web:e6b081e65c3cc546b34174",
-  measurementId: "G-SJ62R2SJDG"
-};
-
-    firebase.initializeApp(firebaseConfig);
-    const functions = firebase.functions();
-
-    function sendMessage() {
-      const input = document.getElementById('chatInput');
-      const message = input.value.trim();
-      if (!message) return;
-      input.value = '';
-      const responseBox = document.getElementById('chatResponse');
-      responseBox.textContent = 'Thinking...';
-      const askAI = functions.httpsCallable('askAI');
-      askAI({ prompt: message }).then(result => {
-        responseBox.textContent = "AI says: " + result.data.reply;
-      }).catch(error => {
-        console.error(error);
-        responseBox.textContent = "There was an error connecting to AI.";
-      });
-    }
-  </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = {
+                qrText: document.getElementById('qrText'),
+                qrColor: document.getElementById('qrColor'),
+                qrBgColor: document.getElementById('qrBgColor'),
+                qrSize: document.getElementById('qrSize'),
+                generateBtn: document.getElementById('generateBtn'),
+                downloadBtn: document.getElementById('downloadBtn'),
+                qrcodeDiv: document.getElementById('qrcode'),
+                errorMsg: document.getElementById('errorMsg')
+            };
+            
+            let currentQRCode = null;
+            
+            // Add event listeners
+            elements.generateBtn.addEventListener('click', generateQRCode);
+            elements.downloadBtn.addEventListener('click', downloadQRCode);
+            
+            // Generate QR Code function
+            function generateQRCode() {
+                const text = elements.qrText.value.trim();
+                
+                // Validation
+                if (!text) {
+                    showError('Please enter some text or URL');
+                    return;
+                }
+                
+                // Clear previous QR code and error
+                elements.qrcodeDiv.innerHTML = '';
+                hideError();
+                
+                const options = {
+                    color: {
+                        dark: elements.qrColor.value,
+                        light: elements.qrBgColor.value
+                    },
+                    width: parseInt(elements.qrSize.value),
+                    height: parseInt(elements.qrSize.value),
+                    errorCorrectionLevel: 'H' // High error correction
+                };
+                
+                // Generate QR code with fallback methods
+                try {
+                    // Try using the <canvas> method first
+                    QRCode.toCanvas(text, options, function(error, canvas) {
+                        if (error) {
+                            console.log('Canvas method failed, trying image method:', error);
+                            generateQRWithImageMethod(text, options);
+                            return;
+                        }
+                        
+                        elements.qrcodeDiv.appendChild(canvas);
+                        currentQRCode = canvas.toDataURL('image/png');
+                        elements.downloadBtn.style.display = 'block';
+                    });
+                } catch (error) {
+                    console.log('QR generation error:', error);
+                    showError('Error generating QR code. Please try again.');
+                }
+            }
+            
+            // Fallback method using <img> tag
+            function generateQRWithImageMethod(text, options) {
+                QRCode.toDataURL(text, options, function(error, url) {
+                    if (error) {
+                        console.log('Image method also failed:', error);
+                        showError('Failed to generate QR code. Please check your input.');
+                        return;
+                    }
+                    
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = 'Generated QR Code';
+                    elements.qrcodeDiv.appendChild(img);
+                    currentQRCode = url;
+                    elements.downloadBtn.style.display = 'block';
+                });
+            }
+            
+            // Download function
+            function downloadQRCode() {
+                if (!currentQRCode) return;
+                
+                const a = document.createElement('a');
+                a.href = currentQRCode;
+                a.download = `qr-code-${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+            
+            // Error handling functions
+            function showError(message) {
+                elements.errorMsg.textContent = message;
+                elements.errorMsg.style.display = 'block';
+                elements.downloadBtn.style.display = 'none';
+                currentQRCode = null;
+            }
+            
+            function hideError() {
+                elements.errorMsg.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
